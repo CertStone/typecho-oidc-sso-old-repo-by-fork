@@ -1,15 +1,15 @@
 <?php
 namespace TypechoPlugin\Oidc;
 
-use Typecho\Widget;
-use Typecho\Db;
+use Exception;
 use Typecho\Common;
+use Typecho\Db;
+use Typecho\Widget;
 use Widget\ActionInterface;
 use Widget\Notice;
+use Widget\Options;
 use Widget\Security;
 use Widget\User;
-use Widget\Options;
-use Exception;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;

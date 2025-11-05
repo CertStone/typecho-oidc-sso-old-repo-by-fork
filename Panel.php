@@ -1,11 +1,11 @@
 <?php
 namespace TypechoPlugin\Oidc;
 
-use Typecho\Db;
 use Typecho\Common;
+use Typecho\Db;
+use Widget\Options;
 use Widget\Security;
 use Widget\User;
-use Widget\Options;
 
 if (!defined('__TYPECHO_ROOT_DIR__'))
     exit;

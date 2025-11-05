@@ -1,11 +1,11 @@
 <?php
 namespace TypechoPlugin\Oidc;
 
-use Typecho\Plugin\PluginInterface;
-use Typecho\Plugin\Exception;
-use Typecho\Widget\Helper\Form;
-use Typecho\Db;
 use Typecho\Common;
+use Typecho\Db;
+use Typecho\Plugin\Exception;
+use Typecho\Plugin\PluginInterface;
+use Typecho\Widget\Helper\Form;
 use Utils\Helper;
 use Widget\Options;
 

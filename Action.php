@@ -1,13 +1,52 @@
 <?php
-class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
+namespace TypechoPlugin\Oidc;
+
+use Typecho\Widget;
+use Typecho\Db;
+use Typecho\Common;
+use Widget\ActionInterface;
+use Widget\Notice;
+use Widget\Security;
+use Widget\User;
+use Widget\Options;
+use Exception;
+
+if (!defined('__TYPECHO_ROOT_DIR__')) {
+    exit;
+}
+
+class Action extends Widget implements ActionInterface
 {
     // ==================== 公共接口方法 ====================
 
     /**
-     * 动作接口
+     * 动作接口 - 根据 do 参数分发请求
+     * 所有通过 action 的操作都需要登录和 CSRF 保护
      */
     public function action()
     {
+        $options = Options::alloc();
+
+        // 检查用户是否登录
+        $user = User::alloc();
+        if (!$user->hasLogin()) {
+            $this->response->redirect(Common::url('admin/login.php', $options->index));
+            exit;
+        }
+
+        // CSRF 保护
+        Security::alloc()->protect();
+
+        $do = $this->request->get('do');
+
+        switch ($do) {
+            case 'unbind':
+                $this->unbind();
+                break;
+            default:
+                $this->response->setStatus(404);
+                exit;
+        }
     }
 
     /**
@@ -24,7 +63,7 @@ class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
      */
     public function login()
     {
-        $options = Typecho_Widget::widget('Widget_Options');
+        $options = Options::alloc();
         $pluginConfig = $options->plugin('Oidc');
 
         // 检查配置是否完整
@@ -45,7 +84,7 @@ class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
         );
 
         // 构建授权 URL
-        $redirectUri = $options->index . '/oidc/callback';
+        $redirectUri = Common::url('/oidc/callback', $options->index);
 
         // 获取授权端点
         $discoveryData = $this->getDiscoveryData($pluginConfig->discoveryUrl);
@@ -70,7 +109,7 @@ class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
      */
     public function callback()
     {
-        $options = Typecho_Widget::widget('Widget_Options');
+        $options = Options::alloc();
         $pluginConfig = $options->plugin('Oidc');
 
         // 获取 code 和 state
@@ -116,20 +155,12 @@ class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
 
     /**
      * 解绑 OIDC 账户
+     * 注意：登录检查和 CSRF 保护已在 action() 方法中完成
      */
     public function unbind()
     {
-        $options = Typecho_Widget::widget('Widget_Options');
-
-        // 检查用户是否登录
-        $user = Typecho_Widget::widget('Widget_User');
-        if (!$user->hasLogin()) {
-            $this->response->redirect(Typecho_Common::url('admin/login.php', $options->index));
-            exit;
-        }
-
-        // CSRF 保护
-        Typecho_Widget::widget('Widget_Security')->protect();
+        $options = Options::alloc();
+        $user = User::alloc();
 
         $bindingId = $this->request->get('binding_id');
         if (empty($bindingId)) {
@@ -138,13 +169,13 @@ class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
         $bindingId = intval($bindingId);
 
         if ($bindingId <= 0) {
-            Typecho_Widget::widget('Widget_Notice')->set(_t('无效的绑定ID'), 'error');
-            $this->response->redirect(Typecho_Common::url('admin/extending.php?panel=Oidc%2FPanel.php', $options->index));
+            Notice::alloc()->set(_t('无效的绑定ID'), 'error');
+            $this->response->redirect(Common::url('admin/extending.php?panel=Oidc%2FPanel.php', $options->index));
             exit;
         }
 
         try {
-            $db = Typecho_Db::get();
+            $db = Db::get();
             $prefix = $db->getPrefix();
 
             // 确保只能解绑自己的账户
@@ -154,14 +185,14 @@ class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
                     ->where('uid = ?', $user->uid)
             );
 
-            Typecho_Widget::widget('Widget_Notice')->set(_t('解绑成功'), 'success');
+            Notice::alloc()->set(_t('解绑成功'), 'success');
         } catch (Exception $e) {
             error_log('OIDC 解绑错误: ' . $e->getMessage());
-            Typecho_Widget::widget('Widget_Notice')->set(_t('解绑失败: ') . $e->getMessage(), 'error');
+            Notice::alloc()->set(_t('解绑失败: ') . $e->getMessage(), 'error');
         }
 
         // 重定向回管理面板
-        $this->response->redirect(Typecho_Common::url('admin/extending.php?panel=Oidc%2FPanel.php', $options->index));
+        $this->response->redirect(Common::url('admin/extending.php?panel=Oidc%2FPanel.php', $options->index));
         exit;
     }
 
@@ -171,7 +202,7 @@ class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
      * 处理用户登录
      * 
      * @param array $userInfo 用户信息
-     * @param Typecho_Widget $options Widget_Options 实例
+     * @param Options $options Widget_Options 实例
      */
     private function processUserLogin($userInfo, $options)
     {
@@ -187,7 +218,7 @@ class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
 
         $sub = $userInfo['sub'];
         $iss = $userInfo['iss']; // OIDC Issuer
-        $db = Typecho_Db::get();
+        $db = Db::get();
         $prefix = $db->getPrefix();
 
         // 查找绑定关系（使用 iss + sub 组合）
@@ -203,12 +234,12 @@ class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
                 session_regenerate_id(true);
 
                 // 直接登录
-                $user = Typecho_Widget::widget('Widget_User');
+                $user = User::alloc();
                 $user->simpleLogin($binding['uid'], false);
 
                 if ($user->hasLogin()) {
                     // 登录成功，跳转到后台
-                    $adminUrl = Typecho_Common::url('admin/', $options->index);
+                    $adminUrl = Common::url('admin/', $options->index);
                     $this->response->redirect($adminUrl);
                 } else {
                     $this->loginError('登录失败，请重试');
@@ -227,12 +258,12 @@ class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
      * 处理绑定流程
      * 
      * @param array $userInfo 用户信息
-     * @param Typecho_Widget $options Widget_Options 实例
+     * @param Options $options Widget_Options 实例
      */
     private function handleBinding($userInfo, $options)
     {
         // 检查用户是否已经登录
-        $user = Typecho_Widget::widget('Widget_User');
+        $user = User::alloc();
 
         if ($user->hasLogin()) {
             // 用户已登录，直接执行绑定
@@ -249,12 +280,12 @@ class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
      * 
      * @param array $userInfo OIDC 用户信息
      * @param int $uid Typecho 用户 ID
-     * @param Typecho_Widget $options Widget_Options 实例
+     * @param Options $options Widget_Options 实例
      */
     private function performBinding($userInfo, $uid, $options)
     {
         try {
-            $db = Typecho_Db::get();
+            $db = Db::get();
             $prefix = $db->getPrefix();
 
             // 检查是否已经绑定（使用 iss + sub 组合）
@@ -280,16 +311,16 @@ class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
             );
 
             // 确保用户已登录
-            $user = Typecho_Widget::widget('Widget_User');
+            $user = User::alloc();
             if (!$user->hasLogin()) {
                 $user->simpleLogin($uid, false);
             }
 
             // 添加成功提示
-            Typecho_Widget::widget('Widget_Notice')->set(_t('OIDC 账户绑定成功'), 'success');
+            Notice::alloc()->set(_t('OIDC 账户绑定成功'), 'success');
 
             // 绑定成功，跳转到 OIDC 绑定管理面板
-            $panelUrl = Typecho_Common::url('admin/extending.php?panel=Oidc%2FPanel.php', $options->index);
+            $panelUrl = Common::url('admin/extending.php?panel=Oidc%2FPanel.php', $options->index);
             $this->response->redirect($panelUrl);
 
         } catch (Exception $e) {
@@ -305,7 +336,7 @@ class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
      * 
      * @param string $code 授权码
      * @param string $state state 参数
-     * @param Typecho_Widget $options Widget_Options 实例
+     * @param Options $options Widget_Options 实例
      * @param object $pluginConfig 插件配置
      * @return array|false 包含 access_token 和 id_token 的数组或 false
      */
@@ -323,7 +354,7 @@ class Oidc_Action extends Typecho_Widget implements Widget_Interface_Do
             $tokenUrl = rtrim($pluginConfig->oauthUrl, '/') . '/oauth2/token';
         }
 
-        $redirectUri = $options->index . '/oidc/callback';
+        $redirectUri = Common::url('/oidc/callback', $options->index);
 
         // 构建请求头
         $authString = $pluginConfig->clientId . ':' . $pluginConfig->clientSecret;

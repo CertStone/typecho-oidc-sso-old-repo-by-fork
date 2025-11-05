@@ -18,7 +18,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  *
  * @package Oidc
  * @author uy/sun
- * @version 0.1.0
+ * @version 0.2.0
  * @link https://github.com/he0119/typecho-oidc
  */
 class Plugin implements PluginInterface

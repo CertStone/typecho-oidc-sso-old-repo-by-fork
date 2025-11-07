@@ -198,7 +198,7 @@ class Action extends Base implements ActionInterface
 
     /**
      * 处理用户登录
-     * 
+     *
      * @param array $userInfo 用户信息
      */
     private function processUserLogin($userInfo)
@@ -252,7 +252,7 @@ class Action extends Base implements ActionInterface
 
     /**
      * 处理绑定流程
-     * 
+     *
      * @param array $userInfo 用户信息
      */
     private function handleBinding($userInfo)
@@ -311,7 +311,7 @@ class Action extends Base implements ActionInterface
 
     /**
      * 获取访问令牌和 ID Token
-     * 
+     *
      * @param string $code 授权码
      * @return array|false 包含 access_token 和 id_token 的数组或 false
      */
@@ -380,7 +380,7 @@ class Action extends Base implements ActionInterface
 
     /**
      * 从 UserInfo 端点获取用户信息
-     * 
+     *
      * @param string $accessToken Access Token
      * @param object $pluginConfig 插件配置
      * @return array|false 用户信息数组或 false
@@ -439,7 +439,7 @@ class Action extends Base implements ActionInterface
 
     /**
      * 获取 OIDC 发现文档数据
-     * 
+     *
      * @param string $discoveryUrl 发现文档 URL
      * @return array|false 发现文档数据或 false
      */
@@ -498,7 +498,7 @@ class Action extends Base implements ActionInterface
 
     /**
      * 验证 State 参数
-     * 
+     *
      * @param string $state 接收到的 state 值
      * @return bool 验证是否通过
      */
@@ -558,7 +558,7 @@ class Action extends Base implements ActionInterface
 
     /**
      * 显示登录错误信息并退出
-     * 
+     *
      * @param string $message 错误信息
      */
     private function loginError($message)

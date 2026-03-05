@@ -239,6 +239,24 @@ class Plugin implements PluginInterface
         );
         $form->addInput($emailClaim);
 
+        $uiCdnBase = new Form\Element\Text(
+            'uiCdnBase',
+            null,
+            'https://s4.zstatic.net/ajax/libs/daisyui/5.1.25',
+            _t('前端 UI CDN Base URL'),
+            _t('用于加载 daisyUI 的 CSS 资源，示例：https://s4.zstatic.net/ajax/libs/daisyui/5.1.25')
+        );
+        $form->addInput($uiCdnBase);
+
+        $loginBackgroundUrl = new Form\Element\Text(
+            'loginBackgroundUrl',
+            null,
+            '',
+            _t('登录页背景图片 URL'),
+            _t('可选，留空则使用默认背景色')
+        );
+        $form->addInput($loginBackgroundUrl);
+
     }
 
     /**

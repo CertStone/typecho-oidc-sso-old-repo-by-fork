@@ -242,9 +242,9 @@ class Plugin implements PluginInterface
         $uiCdnBase = new Form\Element\Text(
             'uiCdnBase',
             null,
-            'https://s4.zstatic.net/ajax/libs/daisyui/5.1.25',
+            'https://s4.zstatic.net',
             _t('前端 UI CDN Base URL'),
-            _t('用于加载 daisyUI 的 CSS 资源，示例：https://s4.zstatic.net/ajax/libs/daisyui/5.1.25')
+            _t('用于加载 daisyUI 与 Tailwind Browser 资源。默认会拼接：/ajax/libs/daisyui/5.1.25 与 /npm/@tailwindcss/browser@4')
         );
         $form->addInput($uiCdnBase);
 

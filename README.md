@@ -6,7 +6,7 @@ OpenID Connect 的认证插件
 
 ```bash
 cd typecho/usr/plugins
-git clone https://github.com/he0119/typecho-oidc.git Oidc
+git clone https://github.com/CertStone/typecho-oidc.git Oidc
 ```
 
 ## 使用

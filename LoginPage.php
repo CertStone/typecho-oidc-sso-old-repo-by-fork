@@ -24,10 +24,28 @@ $loginUrl = Common::url('/oidc/login', $options->index);
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title><?php _e('%s 登录', $systemName); ?> - <?php echo htmlspecialchars($options->title); ?></title>
     <meta name="robots" content="noindex, nofollow">
-    <link rel="stylesheet" href="<?php echo Common::url('admin/css/normalize.css', $options->index); ?>">
-    <link rel="stylesheet" href="<?php echo Common::url('admin/css/grid.css', $options->index); ?>">
-    <link rel="stylesheet" href="<?php echo Common::url('admin/css/style.css', $options->index); ?>">
     <style>
+        :root {
+            color-scheme: light;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC",
+                "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #f5f7ff 0%, #f7f8fb 45%, #eef1ff 100%);
+            color: #1f1f1f;
+        }
+
+        a {
+            color: inherit;
+        }
+
         .oidc-login-wrap {
             display: table;
             height: 100%;
@@ -38,13 +56,14 @@ $loginUrl = Common::url('/oidc/login', $options->index);
             display: table-cell;
             vertical-align: middle;
             text-align: center;
+            padding: 40px 20px;
         }
 
         .oidc-login h1 {
             margin: 0 0 20px;
             font-size: 24px;
             font-weight: normal;
-            color: #222;
+            color: #1b1f3b;
         }
 
         .oidc-card {
@@ -53,7 +72,7 @@ $loginUrl = Common::url('/oidc/login', $options->index);
             margin: 0 auto;
             background: #fff;
             border-radius: 8px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 12px 30px rgba(17, 24, 39, 0.12);
             padding: 28px 32px;
             text-align: left;
         }
@@ -70,6 +89,7 @@ $loginUrl = Common::url('/oidc/login', $options->index);
             background: #2f54eb;
             color: #fff;
             text-decoration: none;
+            box-shadow: 0 6px 14px rgba(47, 84, 235, 0.3);
         }
 
         .oidc-primary:hover {
@@ -105,10 +125,38 @@ $loginUrl = Common::url('/oidc/login', $options->index);
         .oidc-form .input {
             width: 100%;
             margin-bottom: 12px;
+            border: 1px solid #d0d7e2;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 14px;
+            background: #fff;
+            outline: none;
+        }
+
+        .oidc-form .input:focus {
+            border-color: #2f54eb;
+            box-shadow: 0 0 0 3px rgba(47, 84, 235, 0.15);
         }
 
         .oidc-form .submit {
             margin-top: 12px;
+        }
+
+        .oidc-form .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 18px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            background: #0f172a;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .oidc-form .btn:hover {
+            background: #111827;
         }
 
         .oidc-hint {

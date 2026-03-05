@@ -208,7 +208,7 @@ class Plugin implements PluginInterface
             array('0' => _t('关闭'), '1' => _t('开启')),
             '0',
             _t('PKCE 支持'),
-            _t('是否在授权码流程中启用 PKCE（推荐开启）')
+            _t('是否在授权码流程中启用 PKCE')
         );
         $form->addInput($enablePkce);
 

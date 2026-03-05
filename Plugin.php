@@ -1,11 +1,13 @@
 <?php
 namespace TypechoPlugin\Oidc;
 
+use Typecho\Common;
 use Typecho\Db;
 use Typecho\Plugin\Exception;
 use Typecho\Plugin\PluginInterface;
 use Typecho\Widget\Helper\Form;
 use Utils\Helper;
+use Widget\Options;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -15,10 +17,10 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  * OpenID Connect 插件
  *
  * @package Oidc
- * @author uy/sun
- * @version 0.3.0
+ * @author uy/sun和CertStone
+ * @version 0.3.1
  * @since 1.2.0
- * @link https://github.com/he0119/typecho-oidc
+ * @link https://github.com/CertStone/typecho-oidc
  */
 class Plugin implements PluginInterface
 {
@@ -140,13 +142,18 @@ class Plugin implements PluginInterface
      */
     public static function config(Form $form)
     {
+        $options = Options::alloc();
+        $callbackUrl = Common::url('/oidc/callback', $options->index);
+        $loginPageUrl = Common::url('/oidc/login-page', $options->index);
+        $logoutRedirectUrl = Common::url('/', $options->index);
+
         // 添加 OIDC 发现文档 URL 配置
         $discoveryUrl = new Form\Element\Text(
             'discoveryUrl',
             null,
             '',
             _t('OIDC 发现文档 URL'),
-            _t('例如: https://your-oidc-provider/.well-known/openid_configuration<br/>配置此项后，其他 URL 将自动获取')
+            _t('例如: https://your-oidc-provider/.well-known/openid_configuration<br/>回调地址: %s<br/>自定义登录页: %s<br/>退出登录后重定向: %s', $callbackUrl, $loginPageUrl, $logoutRedirectUrl)
         );
         $form->addInput($discoveryUrl);
 

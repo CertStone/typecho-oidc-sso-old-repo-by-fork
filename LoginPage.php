@@ -39,37 +39,6 @@ $tailwindBrowserUrl = $cdnBase . '/npm/@tailwindcss/browser@4';
                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
         }
 
-        .oidc-page {
-            min-height: 100vh;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 48px 24px;
-            background: radial-gradient(circle at top, #e0f2fe 0%, #eef2ff 45%, #f8fafc 100%);
-            background-size: cover;
-            background-position: center;
-        }
-
-        .oidc-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(248, 250, 252, 0.72);
-            backdrop-filter: blur(10px);
-        }
-
-        .oidc-shell {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 440px;
-        }
-
-        .oidc-card {
-            border-radius: 20px;
-            box-shadow: 0 30px 80px rgba(15, 23, 42, 0.2);
-        }
-
         .oidc-brand-dot {
             width: 8px;
             height: 8px;
@@ -78,58 +47,60 @@ $tailwindBrowserUrl = $cdnBase . '/npm/@tailwindcss/browser@4';
 </head>
 
 <body>
-    <div class="oidc-page"<?php if (!empty($backgroundUrl)) { ?> style="background-image: url('<?php echo htmlspecialchars($backgroundUrl); ?>');"<?php } ?> >
-        <div class="oidc-overlay"></div>
-        <div class="oidc-shell">
-            <div class="text-center">
+    <div class="hero min-h-screen bg-base-200"<?php if (!empty($backgroundUrl)) { ?> style="background-image: url('<?php echo htmlspecialchars($backgroundUrl); ?>'); background-size: cover; background-position: center;"<?php } ?> >
+        <?php if (!empty($backgroundUrl)) { ?>
+            <div class="hero-overlay bg-base-200/70"></div>
+        <?php } ?>
+        <div class="hero-content flex-col text-center">
+            <div class="max-w-md">
                 <div class="flex items-center justify-center gap-2 text-sm text-base-content/60">
                     <span class="oidc-brand-dot rounded-full bg-primary"></span>
                     <span><?php _e('统一认证'); ?></span>
                 </div>
-                <h1 class="text-3xl font-semibold text-base-content mt-3">
+                <h1 class="text-4xl font-semibold text-base-content mt-3">
                     <?php _e('登录你的账号'); ?>
                 </h1>
-                <p class="text-sm text-base-content/60 mt-2">
+                <p class="py-3 text-sm text-base-content/60">
                     <?php _e('使用 %s 账户或本地账号登录', $systemName); ?>
                 </p>
-            </div>
 
-            <div class="card bg-base-100/80 backdrop-blur-sm oidc-card mt-6">
-                <div class="card-body space-y-5">
-                    <a class="btn btn-primary w-full" href="<?php echo $loginUrl; ?>">
-                        <?php _e('从 %s 登录/注册', $systemName); ?>
-                    </a>
+                <div class="card bg-base-100 shadow-2xl">
+                    <div class="card-body space-y-4">
+                        <a class="btn btn-primary w-full" href="<?php echo $loginUrl; ?>">
+                            <?php _e('从 %s 登录/注册', $systemName); ?>
+                        </a>
 
-                    <div class="divider text-xs text-base-content/50"><?php _e('或使用本地账户'); ?></div>
+                        <div class="divider text-xs text-base-content/50"><?php _e('或使用本地账户'); ?></div>
 
-                    <form action="<?php echo $loginAction; ?>" method="post" name="login" role="form" class="space-y-3">
-                        <div class="form-control">
-                            <label class="label" for="name">
-                                <span class="label-text"><?php _e('用户名或邮箱'); ?></span>
-                            </label>
-                            <input type="text" id="name" name="name" class="input input-bordered" placeholder="<?php _e('请输入用户名或邮箱'); ?>" />
-                        </div>
-                        <div class="form-control">
-                            <label class="label" for="password">
-                                <span class="label-text"><?php _e('密码'); ?></span>
-                            </label>
-                            <input type="password" id="password" name="password" class="input input-bordered" placeholder="<?php _e('请输入密码'); ?>" required />
-                        </div>
-                        <input type="hidden" name="referer" value="<?php echo $referer; ?>" />
-                        <div class="form-control">
-                            <label class="label cursor-pointer justify-start gap-2">
-                                <input type="checkbox" class="checkbox checkbox-sm" name="remember" value="1" id="remember" />
-                                <span class="label-text"><?php _e('记住我'); ?></span>
-                            </label>
-                        </div>
-                        <button type="submit" class="btn btn-neutral w-full">
-                            <?php _e('登录'); ?>
-                        </button>
-                    </form>
+                        <form action="<?php echo $loginAction; ?>" method="post" name="login" role="form" class="space-y-3 text-left">
+                            <div class="form-control">
+                                <label class="label" for="name">
+                                    <span class="label-text"><?php _e('用户名或邮箱'); ?></span>
+                                </label>
+                                <input type="text" id="name" name="name" class="input input-bordered" placeholder="<?php _e('请输入用户名或邮箱'); ?>" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label" for="password">
+                                    <span class="label-text"><?php _e('密码'); ?></span>
+                                </label>
+                                <input type="password" id="password" name="password" class="input input-bordered" placeholder="<?php _e('请输入密码'); ?>" required />
+                            </div>
+                            <input type="hidden" name="referer" value="<?php echo $referer; ?>" />
+                            <div class="form-control">
+                                <label class="label cursor-pointer justify-start gap-2">
+                                    <input type="checkbox" class="checkbox checkbox-sm" name="remember" value="1" id="remember" />
+                                    <span class="label-text"><?php _e('记住我'); ?></span>
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-neutral w-full">
+                                <?php _e('登录'); ?>
+                            </button>
+                        </form>
 
-                    <p class="text-xs text-center text-base-content/50">
-                        <?php _e('注册功能已在后台禁用'); ?>
-                    </p>
+                        <p class="text-xs text-center text-base-content/50">
+                            <?php _e('注册功能已在后台禁用'); ?>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

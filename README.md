@@ -32,6 +32,8 @@ git clone https://github.com/CertStone/typecho-oidc.git Oidc
 <a href="<?php $options->index('oidc/login-page'); ?>"><?php _e('统一认证登录'); ?></a>
 ```
 
+> 注意：若在插件设置中关闭「自动注册」，OIDC 首次登录用户需要先使用本地账号登录并在 OIDC 绑定管理页完成绑定。
+
 ## IdP 配置说明
 
 根据插件代码，当前 OIDC 回调地址固定为：

@@ -257,6 +257,15 @@ class Plugin implements PluginInterface
         );
         $form->addInput($uiCdnBase);
 
+        $loginLogoUrl = new Form\Element\Text(
+            'loginLogoUrl',
+            null,
+            '',
+            _t('登录页 Logo URL'),
+            _t('可选，留空则不显示 Logo。建议使用透明背景 PNG/SVG')
+        );
+        $form->addInput($loginLogoUrl);
+
         $loginBackgroundUrl = new Form\Element\Text(
             'loginBackgroundUrl',
             null,

@@ -16,6 +16,7 @@ $referer = Common::url('admin/', $options->index);
 $loginUrl = Common::url('/oidc/login', $options->index);
 $cdnBase = !empty($pluginConfig->uiCdnBase) ? rtrim($pluginConfig->uiCdnBase, '/') : 'https://s4.zstatic.net';
 $backgroundUrl = !empty($pluginConfig->loginBackgroundUrl) ? $pluginConfig->loginBackgroundUrl : '';
+$logoUrl = !empty($pluginConfig->loginLogoUrl) ? trim($pluginConfig->loginLogoUrl) : '';
 $daisyCssUrl = $cdnBase . '/npm/daisyui@5/daisyui.css';
 $daisyThemeUrl = $cdnBase . '/npm/daisyui@5/themes.css';
 $tailwindBrowserUrl = $cdnBase . '/npm/@tailwindcss/browser@4';
@@ -43,6 +44,33 @@ $tailwindBrowserUrl = $cdnBase . '/npm/@tailwindcss/browser@4';
             width: 8px;
             height: 8px;
         }
+
+        .oidc-logo {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            border-radius: 14px;
+        }
+
+        .oidc-input-wrap {
+            position: relative;
+        }
+
+        .oidc-input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: color-mix(in oklab, var(--color-base-content) 45%, transparent);
+            pointer-events: none;
+        }
+
+        .oidc-input {
+            width: 100%;
+            padding-left: 2.5rem;
+            border-radius: 1rem;
+            min-height: 2.75rem;
+        }
     </style>
 </head>
 
@@ -53,9 +81,12 @@ $tailwindBrowserUrl = $cdnBase . '/npm/@tailwindcss/browser@4';
         <?php } ?>
         <div class="hero-content flex-col text-center">
             <div class="max-w-md">
-                <div class="flex items-center justify-center gap-2 text-sm text-base-content/60">
-                    <span class="oidc-brand-dot rounded-full bg-primary"></span>
-                    <span><?php _e('统一认证'); ?></span>
+                <div class="flex items-center justify-center gap-2 text-sm text-base-content/60 mb-2">
+                    <?php if (!empty($logoUrl)) { ?>
+                        <img src="<?php echo htmlspecialchars($logoUrl); ?>" alt="<?php echo htmlspecialchars($systemName); ?>" class="oidc-logo" />
+                    <?php } else { ?>
+                        <span class="oidc-brand-dot rounded-full bg-primary"></span>
+                    <?php } ?>
                 </div>
                 <h1 class="text-4xl font-semibold text-base-content mt-3">
                     <?php _e('登录你的账号'); ?>
@@ -73,17 +104,24 @@ $tailwindBrowserUrl = $cdnBase . '/npm/@tailwindcss/browser@4';
                         <div class="divider text-xs text-base-content/50"><?php _e('或使用本地账户'); ?></div>
 
                         <form action="<?php echo $loginAction; ?>" method="post" name="login" role="form" class="space-y-3 text-left">
+                            <?php if (isset($this->security) && isset($this->request)) { ?>
+                                <input type="hidden" name="_" value="<?php echo $this->security->getToken($this->request->getRequestUrl()); ?>" />
+                            <?php } ?>
                             <div class="form-control">
-                                <label class="label" for="name">
-                                    <span class="label-text"><?php _e('用户名或邮箱'); ?></span>
-                                </label>
-                                <input type="text" id="name" name="name" class="input input-bordered" placeholder="<?php _e('请输入用户名或邮箱'); ?>" />
+                                <div class="oidc-input-wrap">
+                                    <svg class="oidc-input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                        <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z" />
+                                    </svg>
+                                    <input type="text" id="name" name="name" class="input input-bordered oidc-input" placeholder="Username" autocomplete="username" required />
+                                </div>
                             </div>
                             <div class="form-control">
-                                <label class="label" for="password">
-                                    <span class="label-text"><?php _e('密码'); ?></span>
-                                </label>
-                                <input type="password" id="password" name="password" class="input input-bordered" placeholder="<?php _e('请输入密码'); ?>" required />
+                                <div class="oidc-input-wrap">
+                                    <svg class="oidc-input-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                        <path d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Zm-6 6.73V17a1 1 0 1 0 2 0v-1.27a2 2 0 1 0-2 0ZM10 9V7a2 2 0 0 1 4 0v2Z" />
+                                    </svg>
+                                    <input type="password" id="password" name="password" class="input input-bordered oidc-input" placeholder="password" autocomplete="current-password" required />
+                                </div>
                             </div>
                             <input type="hidden" name="referer" value="<?php echo $referer; ?>" />
                             <div class="form-control">
@@ -97,9 +135,6 @@ $tailwindBrowserUrl = $cdnBase . '/npm/@tailwindcss/browser@4';
                             </button>
                         </form>
 
-                        <p class="text-xs text-center text-base-content/50">
-                            <?php _e('注册功能已在后台禁用'); ?>
-                        </p>
                     </div>
                 </div>
             </div>

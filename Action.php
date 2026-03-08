@@ -1225,3 +1225,7 @@ class Action extends Base implements ActionInterface
         exit;
     }
 }
+
+if (!class_exists('Oidc_Action', false)) {
+    class_alias(__NAMESPACE__ . '\\Action', 'Oidc_Action');
+}

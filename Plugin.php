@@ -18,8 +18,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  * OpenID Connect 插件
  *
  * @package Oidc
- * @author uy/sun和CertStone
- * @version 0.3.1
+ * @author CertStone和uy/sun
+ * @version 0.4.0
  * @since 1.2.0
  * @link https://github.com/CertStone/typecho-oidc
  */
@@ -34,14 +34,12 @@ class Plugin implements PluginInterface
      */
     public static function activate()
     {
-        // 拦截后台原生登录/注册页（可配置开关）
-        TypechoPlugin::factory('admin/common.php')->begin = array(__CLASS__, 'interceptNativeAuthPages');
-        // 拦截后台原生登录/注册页（兼容部分版本/别名写法）
-        TypechoPlugin::factory('admin/common.php')->call_begin = array(__CLASS__, 'interceptNativeAuthPages');
+        // 后台入口统一拦截（原生登录注册页 + 账户中心接管）
+        TypechoPlugin::factory('admin/common.php')->begin = array(__CLASS__, 'onAdminCommonBegin');
+        // 兼容部分版本/别名写法
+        TypechoPlugin::factory('admin/common.php')->call_begin = array(__CLASS__, 'onAdminCommonBegin');
 
         // 账户中心接管个人资料页
-        TypechoPlugin::factory('admin/profile.php')->begin = array(__CLASS__, 'interceptProfilePageForAccountCenterTakeover');
-        TypechoPlugin::factory('admin/profile.php')->call_begin = array(__CLASS__, 'interceptProfilePageForAccountCenterTakeover');
         TypechoPlugin::factory('admin/profile.php')->bottom = array(__CLASS__, 'renderProfileTakeoverHint');
 
         // 注册 Action 路由（用于 unbind 等管理操作）
@@ -270,6 +268,28 @@ class Plugin implements PluginInterface
             _t('使用独立账户中心接管用户个人资料设置'),
             _t('启用后将隐藏 Typecho 原生“个人资料/密码修改”并显示“前往账户中心设置”。<br>请谨慎开启，且必须满足：<br>1) 禁用 Typecho 原生登录和注册页=是<br>2) 保留 Typecho 原生账号登录功能=不保留<br>3) 允许用户解绑 OIDC 账户=否<br>4) 已填写账户中心 URL')
         );
+        $enableAccountCenterTakeover->addRule(
+            array(__CLASS__, 'validateAccountCenterTakeoverPrerequisite'),
+            _t('启用接管前需先开启“禁用 Typecho 原生登录和注册页”'),
+            'disableNativeAuthPages',
+            '1'
+        );
+        $enableAccountCenterTakeover->addRule(
+            array(__CLASS__, 'validateAccountCenterTakeoverPrerequisite'),
+            _t('启用接管前，“是否保留 Typecho 原生账号登录功能”必须为“不保留”'),
+            'keepNativePasswordLogin',
+            '0'
+        );
+        $enableAccountCenterTakeover->addRule(
+            array(__CLASS__, 'validateAccountCenterTakeoverPrerequisite'),
+            _t('启用接管前，“是否允许用户解绑 OIDC 账户”必须为“否”'),
+            'allowUserUnbind',
+            '0'
+        );
+        $enableAccountCenterTakeover->addRule(
+            array(__CLASS__, 'validateAccountCenterTakeoverUrl'),
+            _t('启用接管前，必须填写合法的“账户中心 URL”')
+        );
         $form->addInput($enableAccountCenterTakeover);
 
         $allowUserUnbind = new Form\Element\Radio(
@@ -357,10 +377,31 @@ class Plugin implements PluginInterface
     }
 
     /**
+     * 后台公共入口拦截
+     */
+    public static function onAdminCommonBegin()
+    {
+        self::interceptNativeAuthPages();
+        self::interceptProfilePageForAccountCenterTakeover();
+    }
+
+    /**
      * 账户中心接管：访问 profile 页面时触发同步
      */
     public static function interceptProfilePageForAccountCenterTakeover()
     {
+        $scriptName = isset($_SERVER['SCRIPT_NAME']) ? basename((string) $_SERVER['SCRIPT_NAME']) : '';
+        $requestUri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+        $requestPath = parse_url($requestUri, PHP_URL_PATH);
+        if (!is_string($requestPath)) {
+            $requestPath = '';
+        }
+
+        $isProfilePage = $scriptName === 'profile.php' || preg_match('#/profile\.php$#i', $requestPath) === 1;
+        if (!$isProfilePage) {
+            return;
+        }
+
         $options = Options::alloc();
         $pluginConfig = $options->plugin('Oidc');
 
@@ -392,8 +433,7 @@ class Plugin implements PluginInterface
             return;
         }
 
-        $requestUri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
-        $currentUrl = self::buildCurrentAbsoluteUrl($requestUri, $options->siteUrl);
+        $currentUrl = self::buildCurrentAbsoluteUrl($requestUri, $options->adminUrl);
         if ($currentUrl === '') {
             $currentUrl = $profileUrl;
         }
@@ -453,10 +493,15 @@ class Plugin implements PluginInterface
                 sections.forEach(function (section) {
                     var h3 = section.querySelector('h3');
                     var title = h3 ? (h3.textContent || '').trim() : '';
-                    if (section.id === 'change-password' || section.id === 'writing-option' || title === '个人资料') {
+                    if (section.id === 'change-password' || section.id === 'writing-option') {
                         section.style.display = 'none';
                     }
                 });
+
+                var firstSection = panel.querySelector('section');
+                if (firstSection) {
+                    firstSection.style.display = 'none';
+                }
 
                 var wrapper = document.createElement('div');
                 wrapper.className = 'message notice';
@@ -591,6 +636,52 @@ class Plugin implements PluginInterface
         }
 
         return $base . '/' . ltrim($requestUri, '/');
+    }
+
+    /**
+     * 配置保存校验：账户中心接管前置条件
+     *
+     * @param string|null $value
+     * @param string $field
+     * @param string $expected
+     * @return bool
+     */
+    public static function validateAccountCenterTakeoverPrerequisite($value, $field, $expected)
+    {
+        if ((string) $value !== '1') {
+            return true;
+        }
+
+        $actual = isset($_POST[$field]) ? (string) $_POST[$field] : '';
+        if ($actual === '') {
+            $options = Options::alloc();
+            $pluginConfig = $options->plugin('Oidc');
+            $actual = isset($pluginConfig->{$field}) ? (string) $pluginConfig->{$field} : '';
+        }
+
+        return $actual === (string) $expected;
+    }
+
+    /**
+     * 配置保存校验：账户中心 URL
+     *
+     * @param string|null $value
+     * @return bool
+     */
+    public static function validateAccountCenterTakeoverUrl($value)
+    {
+        if ((string) $value !== '1') {
+            return true;
+        }
+
+        $url = isset($_POST['accountCenterUrl']) ? trim((string) $_POST['accountCenterUrl']) : '';
+        if ($url === '') {
+            $options = Options::alloc();
+            $pluginConfig = $options->plugin('Oidc');
+            $url = isset($pluginConfig->accountCenterUrl) ? trim((string) $pluginConfig->accountCenterUrl) : '';
+        }
+
+        return self::sanitizeAccountCenterUrl($url) !== '';
     }
 
 }

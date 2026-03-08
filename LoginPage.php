@@ -90,7 +90,7 @@ $tailwindBrowserUrl = $cdnBase . '/npm/@tailwindcss/browser@4';
                         </a>
 
                         <?php if ($keepNativePasswordLogin) { ?>
-                            <div class="divider text-xs text-base-content/50 my-1 h-px"><?php _e('或使用本地账户'); ?></div>
+                            <div class="divider text-xs text-base-content/50 my-1 h-1"><?php _e('或使用本地账户'); ?></div>
 
                             <form id="oidc-local-login-form" action="<?php echo htmlspecialchars($loginAction); ?>" method="post" name="login" role="form" class="space-y-3 text-left">
                                 <?php if (isset($this->security) && isset($this->request)) { ?>

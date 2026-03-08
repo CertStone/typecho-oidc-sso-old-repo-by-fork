@@ -50,31 +50,28 @@ $tailwindBrowserUrl = $cdnBase . '/npm/@tailwindcss/browser@4';
     <script src="<?php echo $tailwindBrowserUrl; ?>"></script>
 </head>
 
-<body>
+<body class="min-h-screen">
     <div class="hero min-h-screen bg-base-200"<?php if (!empty($backgroundUrl)) { ?> style="background-image: url('<?php echo htmlspecialchars($backgroundUrl); ?>'); background-size: cover; background-position: center;"<?php } ?> >
         <?php if (!empty($backgroundUrl)) { ?>
-            <div class="hero-overlay bg-base-200/70"></div>
+            <div class="hero-overlay bg-base-100/45"></div>
         <?php } ?>
-        <div class="hero-content flex-col text-center">
-            <div class="w-full max-w-3xl px-4 md:px-6">
-                <div class="flex items-center justify-center gap-2 text-sm text-base-content/60 mb-2 min-h-16">
-                    <?php if (!empty($logoUrl)) { ?>
-                        <div class="avatar">
-                            <div class="w-16 h-16 rounded-xl bg-base-100 shadow-sm ring ring-base-300">
-                                <img src="<?php echo htmlspecialchars($logoUrl); ?>" alt="<?php echo htmlspecialchars($systemName); ?>" class="object-contain" />
-                            </div>
+        <div class="hero-content w-full px-3 py-8 sm:px-6 md:px-8">
+            <div class="w-full max-w-5xl">
+                <div class="card w-full rounded-3xl border border-base-300/40 bg-base-100/95 shadow-2xl backdrop-blur-md">
+                    <div class="card-body space-y-5 p-6 sm:p-8 md:p-10">
+                        <div class="border-b border-base-300/70 pb-6 text-center space-y-3">
+                            <?php if (!empty($logoUrl)) { ?>
+                                <img src="<?php echo htmlspecialchars($logoUrl); ?>" alt="<?php echo htmlspecialchars($systemName); ?>" class="mx-auto h-12 w-auto max-w-[220px] object-contain" />
+                            <?php } ?>
+                            <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-base-content">
+                                <?php _e('登录你的账号'); ?>
+                            </h1>
+                            <p class="text-sm md:text-base text-base-content/70">
+                                <?php _e('建议使用 %s', $systemName); ?>
+                            </p>
                         </div>
-                    <?php } ?>
-                </div>
-                <h1 class="text-4xl font-bold text-base-content mt-2">
-                    <?php _e('登录你的账号'); ?>
-                </h1>
-                <p class="pt-2 pb-3 text-sm text-base-content/60">
-                    <?php _e('建议使用 %s', $systemName); ?>
-                </p>
 
-                <div class="card bg-base-100 shadow-2xl w-full max-w-3xl mx-auto">
-                    <div class="card-body space-y-3 md:space-y-4 p-5 md:p-6">
+                        <div class="mx-auto w-full max-w-3xl space-y-4">
                         <?php if (!empty($noticeMessages)) { ?>
                             <div class="alert <?php echo $noticeType === 'error' ? 'alert-error' : ($noticeType === 'success' ? 'alert-success' : 'alert-info'); ?>">
                                 <span><?php echo htmlspecialchars((string) $noticeMessages[0]); ?></span>
@@ -85,7 +82,10 @@ $tailwindBrowserUrl = $cdnBase . '/npm/@tailwindcss/browser@4';
                             <span><?php _e('正在登录，请稍候...'); ?></span>
                         </div>
 
-                        <a class="btn btn-primary btn-md w-full" href="<?php echo $loginUrl; ?>">
+                        <a class="btn btn-neutral btn-lg w-full rounded-2xl normal-case text-base font-semibold shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg" href="<?php echo $loginUrl; ?>">
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M10.75 2a.75.75 0 0 1 0 1.5H6A2.5 2.5 0 0 0 3.5 6v12A2.5 2.5 0 0 0 6 20.5h4.75a.75.75 0 0 1 0 1.5H6A4 4 0 0 1 2 18V6a4 4 0 0 1 4-4h4.75ZM15 7.25a.75.75 0 0 1 .53.22l4.5 4.5a.75.75 0 0 1 0 1.06l-4.5 4.5a.75.75 0 0 1-1.06-1.06l3.22-3.22H8a.75.75 0 0 1 0-1.5h9.69l-3.22-3.22A.75.75 0 0 1 15 7.25Z" />
+                            </svg>
                             <?php _e('从 %s 登录/注册', $systemName); ?>
                         </a>
 
@@ -97,7 +97,7 @@ $tailwindBrowserUrl = $cdnBase . '/npm/@tailwindcss/browser@4';
                                     <input type="hidden" name="_" value="<?php echo htmlspecialchars($this->security->getToken($this->request->getRequestUrl())); ?>" />
                                 <?php } ?>
                                 <div class="form-control">
-                                    <label class="input input-bordered input-md w-full rounded-2xl flex items-center gap-2">
+                                    <label class="input input-bordered input-lg w-full rounded-xl flex items-center gap-2">
                                         <svg class="w-4 h-4 text-base-content/60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                             <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z" />
                                         </svg>
@@ -105,7 +105,7 @@ $tailwindBrowserUrl = $cdnBase . '/npm/@tailwindcss/browser@4';
                                     </label>
                                 </div>
                                 <div class="form-control">
-                                    <label class="input input-bordered input-md w-full rounded-2xl flex items-center gap-2">
+                                    <label class="input input-bordered input-lg w-full rounded-xl flex items-center gap-2">
                                         <svg class="w-4 h-4 text-base-content/60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                             <path d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Zm-6 6.73V17a1 1 0 1 0 2 0v-1.27a2 2 0 1 0-2 0ZM10 9V7a2 2 0 0 1 4 0v2Z" />
                                         </svg>
@@ -119,11 +119,13 @@ $tailwindBrowserUrl = $cdnBase . '/npm/@tailwindcss/browser@4';
                                         <span class="label-text"><?php _e('记住我'); ?></span>
                                     </label>
                                 </div>
-                                <button id="oidc-local-login-submit" type="submit" class="btn btn-neutral btn-md w-full">
+                                <button id="oidc-local-login-submit" type="submit" class="btn btn-outline btn-neutral btn-lg w-full rounded-xl normal-case text-base font-medium">
                                     <?php _e('登录'); ?>
                                 </button>
                             </form>
                         <?php } ?>
+
+                        </div>
 
                     </div>
                 </div>

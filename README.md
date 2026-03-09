@@ -1,6 +1,6 @@
 # OIDC
 
-OpenID Connect 的认证插件
+基于 OpenID Connect 在 Typecho 中实现单点登录（SSO）的插件，支持自动注册、账户绑定等功能。
 
 ## 功能概览
 
@@ -41,6 +41,12 @@ git clone https://github.com/CertStone/typecho-oidc.git Oidc
 ```
 
 > 注意：若在插件设置中关闭「自动注册」，OIDC 首次登录用户需要先使用本地账号登录并在 OIDC 绑定管理页完成绑定。
+
+## UI Preview
+### 登录页（`/oidc/login-page`）
+![登录页示例](https://github.com/user-attachments/assets/befa6377-6a47-4d2e-92f1-6184c0a0dcaa)
+### 绑定页（`/admin/extending.php?panel=Oidc%2FPanel.php`）
+![绑定页示例](https://github.com/user-attachments/assets/d7b46ba0-8ca3-42e5-b3fb-09aeca62a4dd)
 
 ## 插件配置项说明（后台）
 

@@ -106,6 +106,67 @@ git clone https://github.com/CertStone/typecho-oidc.git Oidc
 
 > 注意：这两个开关主要控制“页面入口与展示层”。若要实现严格意义上的“仅允许 SSO、禁止一切密码登录请求”，还需在网关层（Nginx/Apache/WAF）限制原生登录 action 端点。
 
+## 登录逻辑总览（按配置项分支）
+
+便于你在改配置时快速判断行为变化。
+
+```mermaid
+flowchart TD
+    A[访问登录相关入口] --> B{"插件启用?<br/>enablePlugin"}
+    B -- 否 --> B1[返回 OIDC 错误页/不接管原生入口]
+    B -- 是 --> C{入口类型}
+
+    C -->|"原生 login.php / register.php"| D{disableNativeAuthPages}
+    D -- 是 --> E[/"跳转 /oidc/login-page/"/]
+    D -- 否 --> F[继续 Typecho 原生流程]
+
+    C -->|"/oidc/login-page"| G{keepNativePasswordLogin}
+    G -- 1 保留 --> H["展示统一登录页<br/>OIDC 按钮 + 本地密码表单"]
+    G -- 0 不保留 --> I["直接进入 /oidc/login"]
+
+    C -->|"/oidc/login"| J[生成 state 并保存会话]
+    J --> K{enablePkce}
+    K -- 1 --> L["生成 verifier/challenge<br/>附加 code_challenge"]
+    K -- 0 --> M[仅标准授权码参数]
+    L --> N[/"跳转到 IdP authorization_endpoint"/]
+    M --> N
+
+    N --> O["/oidc/callback"]
+    O --> P{"state 校验通过?"}
+    P -- 否 --> P1[报错并终止]
+    P -- 是 --> Q["换取 access_token<br/>PKCE 开启时附带 code_verifier"]
+    Q --> R[请求 userinfo]
+    R --> S{"存在 iss+sub 绑定?"}
+
+    S -- 是 --> T[登录已绑定 Typecho 用户]
+    S -- 否 --> U{enableAutoRegister}
+    U -- 1 --> V{"email 存在且<br/>email_verified=true?"}
+    V -- 否 --> V1[报错：无法自动注册]
+    V -- 是 --> W["自动建号并写入绑定<br/>group=autoRegisterGroup"]
+    W --> X[登录新用户]
+
+    U -- 0 --> Y{"当前已登录本地账号?"}
+    Y -- 否 --> Y1[报错：需先本地登录后再绑定]
+    Y -- 是 --> Z[将当前账号与 iss+sub 绑定]
+    Z --> Z1[绑定成功后跳转绑定面板]
+
+    T --> AA[跳转后台/回跳地址]
+    X --> AA
+```
+
+### 配置项对登录行为影响表
+
+| 配置项 | 默认值 | 开启/取值后的行为 | 关键代码位置 |
+| --- | --- | --- | --- |
+| `enablePlugin`（插件功能开关） | `1` | `0` 时 `/oidc/login`、`/oidc/callback`、`/oidc/login-page` 会走错误/不接管流程；`1` 时启用全部 OIDC 路由逻辑 | `Action::isPluginEnabled()`、`Plugin::shouldDisableNativeAuthPages()` |
+| `disableNativeAuthPages`（禁用原生登录注册页） | `0` | `1` 时访问原生 `login.php/register.php` 会重定向到 `/oidc/login-page`；`0` 时不拦截原生入口 | `Plugin::interceptNativeAuthPages()` |
+| `keepNativePasswordLogin`（保留本地密码登录） | `1` | `1`：`/oidc/login-page` 同时显示 OIDC 按钮与本地表单；`0`：`/oidc/login-page` 直接进入 OIDC 跳转 | `Action::loginPage()`、`LoginPage.php` |
+| `enablePkce`（PKCE 支持） | `0` | `1` 时授权请求追加 `code_challenge`，回调换 token 时要求 `code_verifier`；`0` 时走普通授权码交换 | `Action::isPkceEnabled()`、`generatePkcePair()`、`getAccessToken()` |
+| `enableAutoRegister`（自动注册） | `0` | 未绑定用户回调时：`1` 则尝试自动建号+绑定+登录；`0` 则进入“需先本地登录再绑定”分支 | `Action::processUserLogin()`、`autoRegisterUser()`、`handleBinding()` |
+| `autoRegisterGroup`（自动注册用户组） | `subscriber` | 仅在自动注册成功时生效，决定新建 Typecho 用户组（仅允许 `subscriber/contributor/editor`） | `Action::getAutoRegisterGroup()` |
+| `allowUserUnbind`（允许用户解绑） | `0` | 主要影响绑定面板“是否可解绑”；同时会影响“账户中心接管”是否满足前置条件（间接影响统一登出/资料同步路径） | `Panel.php`、`Action::isUserUnbindAllowed()`、`Action::isAccountCenterTakeoverEnabled()` |
+| `enableAccountCenterTakeover`（账户中心接管） | `0` | 主要不改变首次登录主链路；但在满足前置条件时，会接管 profile 同步与 logout 统一登出跳转 | `Plugin::interceptProfilePageForAccountCenterTakeover()`、`Plugin::interceptNativeLogoutPage()`、`Action::buildUnifiedLogoutTarget()` |
+
 ## 账户中心接管个人资料（可选）
 
 当“使用独立账户中心接管用户个人资料设置”开启且满足前置条件后：

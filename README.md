@@ -20,7 +20,7 @@
 
 ```bash
 cd typecho/usr/plugins
-git clone https://github.com/CertStone/typecho-oidc.git Oidc
+git clone https://github.com/CertStone/typecho-oidc-sso.git Oidc
 ```
 
 ## 使用
